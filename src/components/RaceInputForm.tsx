@@ -202,7 +202,7 @@ export const RaceInputForm: React.FC<Props> = ({
             <span
               className={`font-semibold ${
                 selectedRaceStatus.isClosed
-                  ? 'line-through decoration-double decoration-slate-400 text-slate-400'
+                  ? 'text-slate-400'
                   : selectedRaceStatus.isWithin10Min
                   ? 'text-rose-400 font-bold'
                   : 'text-white'
@@ -233,7 +233,7 @@ export const RaceInputForm: React.FC<Props> = ({
                     <span
                       className={`flex items-center gap-2 ${
                         status.isClosed
-                          ? 'line-through decoration-double decoration-slate-400 text-slate-500'
+                          ? 'text-slate-400'
                           : status.isWithin10Min
                           ? 'text-rose-400 font-bold'
                           : 'text-slate-200'

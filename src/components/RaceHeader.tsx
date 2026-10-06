@@ -53,7 +53,7 @@ export const RaceHeader: React.FC<Props> = ({
           <span
             className={`text-xl sm:text-2xl font-black ${
               isClosed
-                ? 'line-through decoration-double decoration-slate-400 text-slate-400'
+                ? 'text-slate-400'
                 : isWithin10Min
                 ? 'text-rose-400'
                 : 'text-cyan-400'
@@ -70,7 +70,7 @@ export const RaceHeader: React.FC<Props> = ({
           <div
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold ${
               isClosed
-                ? 'bg-slate-900 border-slate-700 line-through decoration-double decoration-slate-400 text-slate-400'
+                ? 'bg-slate-900 border-slate-700 text-slate-400'
                 : isWithin10Min
                 ? 'bg-rose-950/80 border-rose-700 text-rose-300 animate-pulse'
                 : 'bg-slate-900 border-slate-700 text-slate-300'
