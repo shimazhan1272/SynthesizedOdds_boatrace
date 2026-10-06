@@ -333,23 +333,23 @@ export const PredictionBets: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* HTML Manual Paste Fallback */}
+      {/* HTML or URL Manual Paste Fallback */}
       {showPasteArea && onPasteHtml && (
         <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 space-y-2.5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5 text-cyan-400" />
-              公式3連単オッズHTMLソース貼り付け
+              公式3連単オッズのURLまたはHTMLソース貼り付け
             </span>
-            <span className="text-[11px] text-slate-500">
-              ※CORS制限時や手動即時反映用
+            <span className="text-[11px] text-slate-400">
+              ※オッズURLをそのまま貼り付けても取得・解析できます
             </span>
           </div>
           <textarea
             rows={3}
             value={pastedHtml}
             onChange={(e) => setPastedHtml(e.target.value)}
-            placeholder="<html><body>... 公式サイトのオッズ表HTMLソースを貼り付け ...</body></html>"
+            placeholder="https://www.boatrace.jp/owpc/pc/race/odds3t?rno=4&jcd=20&hd=20261006 または HTMLソースを貼り付け"
             className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-cyan-500"
           />
           <div className="flex justify-end gap-2">

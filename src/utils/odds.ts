@@ -319,7 +319,71 @@ export function parseOfficialOddsHtml(
     }
   }
 
-  // Strategy 4: Regex string fallback (1-2-3: 12.5)
+  // Strategy 4: Markdown Table parser (from Jina Reader or text tables)
+  if (Object.keys(oddsMap).length < 20 && htmlText.includes('|')) {
+    try {
+      const lines = htmlText.split('\n');
+      let inOdds = false;
+      const current2nd = [0, 0, 0, 0, 0, 0];
+
+      for (const line of lines) {
+        if (line.includes('3連単オッズ') || line.includes('### 3連単')) {
+          inOdds = true;
+          continue;
+        }
+        if (!inOdds && line.includes('3連単')) {
+          inOdds = true;
+        }
+        if (!inOdds) continue;
+        if (line.includes('締切時オッズは') || line.includes('ボートレースガイド')) {
+          break;
+        }
+        if (!line.startsWith('|')) continue;
+        if (line.includes('---') || line.includes('レーサー') || line.includes('予選')) continue;
+
+        const cells = line.split('|').slice(1, -1).map((s) => s.trim());
+        if (cells.length === 0) continue;
+
+        let cellIdx = 0;
+        for (let f = 1; f <= 6; f++) {
+          if (cellIdx >= cells.length) break;
+          let sec = current2nd[f - 1];
+          let thd = 0;
+          let odds = 0;
+
+          const c1 = cells[cellIdx];
+          const c2 = cells[cellIdx + 1];
+          const c3 = cells[cellIdx + 2];
+
+          const n1 = parseInt(c1, 10);
+          const n2 = parseInt(c2, 10);
+          const val3 = parseFloat(c3);
+
+          if (n1 >= 1 && n1 <= 6 && n2 >= 1 && n2 <= 6 && !isNaN(val3) && val3 > 0) {
+            sec = n1;
+            current2nd[f - 1] = sec;
+            thd = n2;
+            odds = val3;
+            cellIdx += 3;
+          } else if (n1 >= 1 && n1 <= 6 && !isNaN(parseFloat(c2)) && parseFloat(c2) > 0) {
+            thd = n1;
+            odds = parseFloat(c2);
+            cellIdx += 2;
+          } else {
+            cellIdx++;
+          }
+
+          if (sec > 0 && thd > 0 && odds > 0 && f !== sec && f !== thd && sec !== thd) {
+            oddsMap[`${f}-${sec}-${thd}`] = odds;
+          }
+        }
+      }
+    } catch (e) {
+      // Continue
+    }
+  }
+
+  // Strategy 5: Regex string fallback (1-2-3: 12.5)
   if (Object.keys(oddsMap).length < 20) {
     const regexTrifecta = /\b([1-6])-([1-6])-([1-6])\b\s*[:：\t\s]*([0-9]+(?:\.[0-9]+)?)/g;
     let match;

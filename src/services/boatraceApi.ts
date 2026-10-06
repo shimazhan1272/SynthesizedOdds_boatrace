@@ -661,15 +661,26 @@ export async function fetchRaceData(
 
 /**
  * Fetch official Boatrace page HTML with proxy support
+ * Works in local dev proxy AND on GitHub Pages/static hosting via CORS-enabled Jina Reader proxy.
  */
 export async function fetchOfficialPage(path: string): Promise<string | null> {
-  const fullTargetUrl = `https://www.boatrace.jp${path}`;
-  const cacheBuster = `_t=${Date.now()}`;
-  const separator = path.includes('?') ? '&' : '?';
-
-  // 1. Try local dev proxy: `/proxy/boatrace/...`
+  const fullTargetUrl = path.startsWith('http') ? path : `https://www.boatrace.jp${path}`;
+  let relativePath = path;
   try {
-    const localProxyUrl = `/proxy/boatrace${path}${separator}${cacheBuster}`;
+    if (path.startsWith('http')) {
+      const u = new URL(path);
+      relativePath = u.pathname + u.search;
+    }
+  } catch (e) {
+    // Keep relativePath
+  }
+
+  const cacheBuster = `_t=${Date.now()}`;
+  const separator = relativePath.includes('?') ? '&' : '?';
+
+  // 1. Try local dev proxy: `/proxy/boatrace/...` (Fastest in local / Vite dev server)
+  try {
+    const localProxyUrl = `/proxy/boatrace${relativePath}${separator}${cacheBuster}`;
     const res = await fetch(localProxyUrl, { cache: 'no-store' });
     if (res.ok) {
       const text = await res.text();
@@ -681,30 +692,55 @@ export async function fetchOfficialPage(path: string): Promise<string | null> {
     // Continue
   }
 
-  // 2. Try allorigins CORS proxy
+  // 2. Try Jina Reader HTML mode (Bypasses CORS & Akamai for static hosting / GitHub Pages)
+  try {
+    const jinaUrl = `https://r.jina.ai/${fullTargetUrl}`;
+    const res = await fetch(jinaUrl, {
+      cache: 'no-store',
+      headers: {
+        'X-Return-Format': 'html',
+        'X-No-Cache': 'true',
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (res.ok) {
+      const text = await res.text();
+      if (text.includes('oddsPoint') || text.includes('boatrace') || text.includes('table')) {
+        return text;
+      }
+    }
+  } catch (e) {
+    // Continue
+  }
+
+  // 3. Try Jina Reader default markdown mode
+  try {
+    const jinaUrl = `https://r.jina.ai/${fullTargetUrl}`;
+    const res = await fetch(jinaUrl, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10000),
+    });
+    if (res.ok) {
+      const text = await res.text();
+      if (text.includes('3連単オッズ') || text.includes('oddsPoint') || text.includes('オッズ')) {
+        return text;
+      }
+    }
+  } catch (e) {
+    // Continue
+  }
+
+  // 4. Try allorigins CORS proxy fallback
   try {
     const targetWithBuster = `${fullTargetUrl}${separator}${cacheBuster}`;
     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetWithBuster)}`;
-    const res = await fetch(proxyUrl, { cache: 'no-store' });
+    const res = await fetch(proxyUrl, { cache: 'no-store', signal: AbortSignal.timeout(6000) });
     if (res.ok) {
       const text = await res.text();
       return text;
     }
   } catch (e) {
     // Continue
-  }
-
-  // 3. Try corsproxy.io
-  try {
-    const targetWithBuster = `${fullTargetUrl}${separator}${cacheBuster}`;
-    const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(targetWithBuster)}`;
-    const res = await fetch(proxyUrl, { cache: 'no-store' });
-    if (res.ok) {
-      const text = await res.text();
-      return text;
-    }
-  } catch (e) {
-    // Failed
   }
 
   return null;

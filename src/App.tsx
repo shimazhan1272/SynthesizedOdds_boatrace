@@ -375,10 +375,40 @@ export default function App() {
     setWeather(newWeather);
   };
 
-  // Handler for HTML paste
-  const handlePasteOddsHtml = (html: string) => {
+  // Handler for HTML or URL paste
+  const handlePasteOddsHtml = async (input: string) => {
+    const trimmed = input.trim();
     const targetYMD = date.replace(/-/g, '');
-    const parsed = parseOfficialOddsHtml(html, raceNumber, stadiumId, targetYMD);
+
+    // If user pasted an official odds URL (e.g. https://www.boatrace.jp/owpc/pc/race/odds3t?rno=4&jcd=20&hd=20261006)
+    if (trimmed.startsWith('http') || trimmed.includes('/owpc/pc/race/odds3t')) {
+      setIsLoadingOdds(true);
+      try {
+        const urlStr = trimmed.startsWith('http') ? trimmed : `https://www.boatrace.jp${trimmed}`;
+        const urlObj = new URL(urlStr);
+        const rno = Number(urlObj.searchParams.get('rno')) || raceNumber;
+        const jcd = Number(urlObj.searchParams.get('jcd')) || stadiumId;
+        const hd = urlObj.searchParams.get('hd') || targetYMD;
+
+        const oddsPath = `/owpc/pc/race/odds3t?rno=${rno}&jcd=${formatStadiumCode(jcd)}&hd=${hd}`;
+        const content = await fetchOfficialPage(oddsPath);
+        if (content) {
+          const parsed = parseOfficialOddsHtml(content, rno, jcd, hd);
+          if (parsed.validCount > 0) {
+            setOddsMap(parsed.oddsMap);
+            setOddsUpdateTime(parsed.updateTime);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Could not parse odds from URL:', err);
+      } finally {
+        setIsLoadingOdds(false);
+      }
+    }
+
+    // Direct HTML or Markdown text
+    const parsed = parseOfficialOddsHtml(trimmed, raceNumber, stadiumId, targetYMD);
     if (parsed.validCount > 0) {
       setOddsMap(parsed.oddsMap);
       setOddsUpdateTime(parsed.updateTime);
