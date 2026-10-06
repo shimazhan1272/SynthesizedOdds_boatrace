@@ -65,19 +65,28 @@ export const RaceInputForm: React.FC<Props> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Only display stadiums that are currently holding races (開催している場だけ表示)
+  // Only display stadiums that are holding races today, with finished ones at the bottom
   const availableStadiums = useMemo(() => {
     if (isToday && todayStadiums.length > 0) {
-      const ongoing = STADIUMS.filter((s) => {
-        const ts = todayStadiums.find((t) => t.stadiumId === s.id);
-        return ts && !ts.allFinished;
-      });
-      // If there are ongoing stadiums, show only those! If all are finished, fallback to today's stadiums
-      return ongoing.length > 0
-        ? ongoing
-        : STADIUMS.filter((s) => todayStadiums.some((t) => t.stadiumId === s.id));
+      // Filter only stadiums held today
+      const todayList = STADIUMS.filter((s) => todayStadiums.some((t) => t.stadiumId === s.id));
+      const ongoing = todayList
+        .filter((s) => {
+          const ts = todayStadiums.find((t) => t.stadiumId === s.id);
+          return ts && !ts.allFinished;
+        })
+        .map((s) => ({ ...s, isFinished: false }));
+
+      const finished = todayList
+        .filter((s) => {
+          const ts = todayStadiums.find((t) => t.stadiumId === s.id);
+          return ts && ts.allFinished;
+        })
+        .map((s) => ({ ...s, isFinished: true }));
+
+      return [...ongoing, ...finished];
     }
-    return STADIUMS;
+    return STADIUMS.map((s) => ({ ...s, isFinished: false }));
   }, [isToday, todayStadiums]);
 
   // Keep stadiumId synced if current stadium is not in availableStadiums
@@ -164,7 +173,7 @@ export const RaceInputForm: React.FC<Props> = ({
           >
             {availableStadiums.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.code}_{s.name}
+                {s.isFinished ? `【終了】${s.code}_${s.name}` : `${s.code}_${s.name}`}
               </option>
             ))}
           </select>
