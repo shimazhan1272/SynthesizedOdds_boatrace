@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+    <linearGradient id="boat" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="100" fill="url(#bg)"/>
+  
+  <!-- Wave curves -->
+  <path d="M 40 380 Q 140 340 240 380 T 440 380 Q 480 380 480 430 L 40 430 Z" fill="url(#water)" opacity="0.6"/>
+  <path d="M 30 400 Q 150 370 270 410 T 490 390 L 490 460 L 30 460 Z" fill="url(#water)" opacity="0.9"/>
+  
+  <!-- Boat Silhouette and Speed lines -->
+  <path d="M 80 320 L 360 220 L 430 260 L 380 330 L 120 340 Z" fill="url(#boat)"/>
+  <!-- Cockpit & Driver Helmet -->
+  <circle cx="280" cy="220" r="32" fill="#f8fafc"/>
+  <path d="M 285 205 L 310 220 L 290 230 Z" fill="#0284c7"/>
+  
+  <!-- 6 Boat color dots representing the 6 boats (1:White, 2:Black, 3:Red, 4:Blue, 5:Yellow, 6:Green) -->
+  <g transform="translate(106, 110)">
+    <circle cx="0" cy="0" r="20" fill="#ffffff" stroke="#94a3b8" stroke-width="4"/>
+    <text x="0" y="7" font-family="sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#0f172a">1</text>
+    
+    <circle cx="60" cy="0" r="20" fill="#1e293b" stroke="#475569" stroke-width="3"/>
+    <text x="60" y="7" font-family="sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#ffffff">2</text>
+    
+    <circle cx="120" cy="0" r="20" fill="#ef4444"/>
+    <text x="120" y="7" font-family="sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#ffffff">3</text>
+    
+    <circle cx="180" cy="0" r="20" fill="#3b82f6"/>
+    <text x="180" y="7" font-family="sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#ffffff">4</text>
+    
+    <circle cx="240" cy="0" r="20" fill="#eab308"/>
+    <text x="240" y="7" font-family="sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#0f172a">5</text>
+    
+    <circle cx="300" cy="0" r="20" fill="#22c55e"/>
+    <text x="300" y="7" font-family="sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#ffffff">6</text>
+  </g>
+</svg>

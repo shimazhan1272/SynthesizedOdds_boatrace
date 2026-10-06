@@ -1,0 +1,6 @@
+{
+  "name": "ボートレースAI予想＆合成オッズ",
+  "description": "統計ロジットモデルによるボートレースAI予想、3連単オッズリアルタイム照会、合成オッズ・最適資金配分計算Webアプリ",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
