@@ -183,6 +183,78 @@ export function calcStakeAllocation(
 }
 
 /**
+ * Derive 2連単 (Exacta) odds map from 3連単 odds map
+ * Mathematically: 1 / Σ_{3rd} (1 / trifectaOdds(1st, 2nd, 3rd))
+ */
+export function deriveExactaOddsFromTrifecta(
+  trifectaOdds: TrifectaOddsMap
+): Record<string, number> {
+  const map: Record<string, number> = {};
+  if (!trifectaOdds) return map;
+
+  for (let b1 = 1; b1 <= 6; b1++) {
+    for (let b2 = 1; b2 <= 6; b2++) {
+      if (b1 === b2) continue;
+      let invSum = 0;
+      let count = 0;
+      for (let b3 = 1; b3 <= 6; b3++) {
+        if (b3 === b1 || b3 === b2) continue;
+        const triKey = `${b1}-${b2}-${b3}`;
+        const odds = trifectaOdds[triKey];
+        if (odds && odds > 0) {
+          invSum += 1 / odds;
+          count++;
+        }
+      }
+      if (count > 0 && invSum > 0) {
+        map[`${b1}-${b2}`] = Number((1 / invSum).toFixed(1));
+      }
+    }
+  }
+  return map;
+}
+
+/**
+ * Derive 3連複 (Trio) odds map from 3連単 odds map
+ * Mathematically: 1 / Σ_{permutations} (1 / trifectaOdds)
+ */
+export function deriveTrioOddsFromTrifecta(
+  trifectaOdds: TrifectaOddsMap
+): Record<string, number> {
+  const map: Record<string, number> = {};
+  if (!trifectaOdds) return map;
+
+  for (let b1 = 1; b1 <= 4; b1++) {
+    for (let b2 = b1 + 1; b2 <= 5; b2++) {
+      for (let b3 = b2 + 1; b3 <= 6; b3++) {
+        const trioKey = `${b1}=${b2}=${b3}`;
+        const perms = [
+          `${b1}-${b2}-${b3}`,
+          `${b1}-${b3}-${b2}`,
+          `${b2}-${b1}-${b3}`,
+          `${b2}-${b3}-${b1}`,
+          `${b3}-${b1}-${b2}`,
+          `${b3}-${b2}-${b1}`,
+        ];
+        let invSum = 0;
+        let count = 0;
+        for (const p of perms) {
+          const odds = trifectaOdds[p];
+          if (odds && odds > 0) {
+            invSum += 1 / odds;
+            count++;
+          }
+        }
+        if (count > 0 && invSum > 0) {
+          map[trioKey] = Number((1 / invSum).toFixed(1));
+        }
+      }
+    }
+  }
+  return map;
+}
+
+/**
  * Parse Official Boatrace odds3t HTML page
  */
 export function parseOfficialOddsHtml(

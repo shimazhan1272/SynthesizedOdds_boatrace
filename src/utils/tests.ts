@@ -3,7 +3,13 @@
  */
 
 import { predict } from './prediction';
-import { calcSyntheticOdds, calcStakeAllocation, parseOfficialOddsHtml } from './odds';
+import {
+  calcSyntheticOdds,
+  calcStakeAllocation,
+  parseOfficialOddsHtml,
+  deriveExactaOddsFromTrifecta,
+  deriveTrioOddsFromTrifecta,
+} from './odds';
 import { BoatEntry, CoefSliders, WeatherData } from '../types/boatrace';
 
 function assert(condition: boolean, msg: string) {
@@ -29,6 +35,27 @@ export function runAllTests() {
   assert(alloc.betCount === 2, `Selected 2 valid bets`);
   assert(alloc.rows[0].amount + alloc.rows[1].amount === alloc.totalCost, `Total cost matches sum of rows`);
   assert(alloc.rows[0].amount % 100 === 0 && alloc.rows[1].amount % 100 === 0, `Amounts rounded to 100 yen`);
+
+  // 3b. 2連単 & 3連複 derived odds and synthetic odds tests
+  const sampleTriOdds: Record<string, number> = {
+    '1-2-3': 20.0,
+    '1-2-4': 20.0,
+    '1-2-5': 20.0,
+    '1-2-6': 20.0,
+    '1-3-2': 30.0,
+    '2-1-3': 30.0,
+    '2-3-1': 30.0,
+    '3-1-2': 30.0,
+    '3-2-1': 30.0,
+  };
+  const exactaMap = deriveExactaOddsFromTrifecta(sampleTriOdds);
+  assert(exactaMap['1-2'] === 5.0, `Exacta 1-2 derived odds is 5.0 (got ${exactaMap['1-2']})`);
+
+  const trioMap = deriveTrioOddsFromTrifecta(sampleTriOdds);
+  assert(trioMap['1=2=3'] > 0, `Trio 1=2=3 derived odds exists (got ${trioMap['1=2=3']})`);
+
+  const exactaAlloc = calcStakeAllocation(['1-2'], exactaMap, 1000);
+  assert(exactaAlloc.syntheticOdds === 5.0, `Exacta synthetic odds is 5.0 (got ${exactaAlloc.syntheticOdds})`);
 
   // 4. Prediction model: Sum of 120 Trifecta probabilities must equal 1.0
   const sampleBoats: BoatEntry[] = [

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Calendar, MapPin, Flag, Search, RotateCcw, ChevronDown, Clock } from 'lucide-react';
 import { STADIUMS } from '../constants/boatrace';
 import { TodayStadiumStatus } from '../types/boatrace';
+import { getTodayJST } from '../services/boatraceApi';
 
 interface Props {
   date: string; // YYYY-MM-DD
@@ -143,10 +144,20 @@ export const RaceInputForm: React.FC<Props> = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Date input */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-cyan-400" />
-            <span>開催年月日</span>
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+              <span>開催年月日</span>
+            </label>
+            <button
+              type="button"
+              onClick={() => onDateChange(getTodayJST().ymdDash)}
+              className="text-[11px] font-bold text-cyan-400 hover:text-cyan-300 bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-800/80 px-2 py-0.5 rounded cursor-pointer transition flex items-center gap-1 active:scale-95"
+              title="本日の日付（今日）を指定"
+            >
+              今日
+            </button>
+          </div>
           <input
             type="date"
             value={date}
