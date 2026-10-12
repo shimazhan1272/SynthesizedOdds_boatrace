@@ -21,6 +21,7 @@ interface Props {
   onTrifectaChange: (val: number) => void;
   onExactaChange: (val: number) => void;
   onTrioChange: (val: number) => void;
+  onResetPoints?: () => void;
   onSubmit: () => void;
 }
 
@@ -41,6 +42,7 @@ export const RaceInputForm: React.FC<Props> = ({
   onTrifectaChange,
   onExactaChange,
   onTrioChange,
+  onResetPoints,
   onSubmit,
 }) => {
   // Current time state to re-evaluate deadline countdown every 10 seconds
@@ -273,15 +275,40 @@ export const RaceInputForm: React.FC<Props> = ({
 
       {/* Second row: Ticket points (0 - 30) */}
       <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
-        <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center justify-between">
-          <span>推奨買い目点数設定（各0〜30点）</span>
-          <span className="text-[11px] text-slate-500">※変更で即座に再計算</span>
+        <div className="text-xs font-semibold text-slate-400 mb-2.5 flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-1.5">
+            <span>推奨買い目点数設定（各0〜30点）</span>
+            <span className="text-[11px] text-cyan-400 font-mono font-bold">
+              (計 {nTrifecta + nExacta + nTrio}点)
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                onTrifectaChange(0);
+                onExactaChange(0);
+                onTrioChange(0);
+                onResetPoints?.();
+              }}
+              disabled={nTrifecta === 0 && nExacta === 0 && nTrio === 0}
+              className="text-[11px] font-bold text-slate-300 hover:text-rose-300 disabled:opacity-40 disabled:cursor-not-allowed bg-slate-800 hover:bg-rose-950/70 border border-slate-700 hover:border-rose-800 px-2.5 py-1 rounded-lg cursor-pointer transition flex items-center gap-1 active:scale-95 shadow-xs"
+              title="3連単・2連単・3連複の買い目点数をすべて0点にリセット"
+            >
+              <RotateCcw className="w-3 h-3 text-rose-400" />
+              <span>点数リセット (全0点)</span>
+            </button>
+            <span className="text-[11px] text-slate-500 hidden sm:inline">※変更で即座に再計算</span>
+          </div>
         </div>
+
         <div className="grid grid-cols-3 gap-2.5">
           {/* 3連単 */}
           <div>
-            <label className="block text-[11px] font-medium text-slate-300 mb-1">
-              3連単
+            <label className="block text-[11px] font-medium text-slate-300 mb-1 flex items-center justify-between">
+              <span>3連単</span>
+              <span className="text-[10px] text-cyan-400 font-mono font-bold">{nTrifecta}点</span>
             </label>
             <select
               value={nTrifecta}
@@ -298,8 +325,9 @@ export const RaceInputForm: React.FC<Props> = ({
 
           {/* 2連単 */}
           <div>
-            <label className="block text-[11px] font-medium text-slate-300 mb-1">
-              2連単
+            <label className="block text-[11px] font-medium text-slate-300 mb-1 flex items-center justify-between">
+              <span>2連単</span>
+              <span className="text-[10px] text-blue-400 font-mono font-bold">{nExacta}点</span>
             </label>
             <select
               value={nExacta}
@@ -316,8 +344,9 @@ export const RaceInputForm: React.FC<Props> = ({
 
           {/* 3連複 */}
           <div>
-            <label className="block text-[11px] font-medium text-slate-300 mb-1">
-              3連複
+            <label className="block text-[11px] font-medium text-slate-300 mb-1 flex items-center justify-between">
+              <span>3連複</span>
+              <span className="text-[10px] text-amber-400 font-mono font-bold">{nTrio}点</span>
             </label>
             <select
               value={nTrio}

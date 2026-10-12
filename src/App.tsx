@@ -461,6 +461,12 @@ export default function App() {
             setNTrio(val);
             savePrefs({ nTrio: val });
           }}
+          onResetPoints={() => {
+            setNTrifecta(0);
+            setNExacta(0);
+            setNTrio(0);
+            savePrefs({ nTrifecta: 0, nExacta: 0, nTrio: 0 });
+          }}
           onSubmit={handleFetchRace}
         />
 
