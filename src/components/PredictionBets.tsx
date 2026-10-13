@@ -457,17 +457,7 @@ export const PredictionBets: React.FC<Props> = ({
     );
   };
 
-  // Estimate target payout for selected bets
-  const approxPayout = useMemo(() => {
-    if (!currentAllocation || currentAllocation.rows.length === 0) return 0;
-    const validRows = currentAllocation.rows.filter((r) => r.expectedReturn > 0);
-    if (validRows.length === 0) return 0;
-    const avg =
-      validRows.reduce((sum, r) => sum + r.expectedReturn, 0) / validRows.length;
-    return Math.round(avg);
-  }, [currentAllocation]);
-
-  // Copy betting table to clipboard (selected bets only)
+  // Copy betting table to clipboard (selected bets only, without payout display)
   const handleCopyBets = () => {
     if (!currentAllocation || currentAllocation.rows.length === 0) return;
     const typeLabel =
@@ -486,18 +476,16 @@ export const PredictionBets: React.FC<Props> = ({
           ? `${currentAllocation.syntheticOdds.toFixed(2)}倍`
           : '未取得'
       }`,
-      `合計購入額: ${currentAllocation.totalCost.toLocaleString()}円 (目標配当: 約${approxPayout.toLocaleString()}円)`,
+      `合計購入額: ${currentAllocation.totalCost.toLocaleString()}円`,
       `--------------------`,
       ...currentAllocation.rows.map((r) => {
         const oddsStr = r.odds > 0 ? `${r.odds.toFixed(1)}倍` : 'オッズ未取得';
-        const returnStr =
-          r.expectedReturn > 0 ? `→ 払戻 約${r.expectedReturn.toLocaleString()}円` : '';
         const tag = r.combination.includes('=')
           ? '[3連複]'
           : r.combination.split('-').length === 2
           ? '[2連単]'
           : '[3連単]';
-        return `${tag} ${r.combination}: ${r.amount.toLocaleString()}円 (${oddsStr} ${returnStr})`;
+        return `${tag} ${r.combination}: ${r.amount.toLocaleString()}円 (${oddsStr})`;
       }),
       `--------------------`,
     ];
@@ -853,11 +841,11 @@ export const PredictionBets: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* 3. Summary KPI Cards for USER-SELECTED bets */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div className="bg-slate-900/80 border border-slate-700/60 rounded-xl p-2.5 text-center">
-          <span className="text-[11px] text-slate-400 block">選択買い目</span>
-          <span className="text-base font-bold text-white font-mono">
+      {/* 3. Summary KPI Cards for USER-SELECTED bets (Clean 3-column layout without payout card) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        <div className="bg-slate-900/80 border border-slate-700/60 rounded-xl p-3 text-center">
+          <span className="text-[11px] text-slate-400 block mb-0.5">選択買い目</span>
+          <span className="text-lg font-bold text-white font-mono">
             {currentActiveCount}点{' '}
             <span className="text-xs text-slate-500 font-normal">
               / 全{currentTotalCount}点
@@ -865,32 +853,25 @@ export const PredictionBets: React.FC<Props> = ({
           </span>
         </div>
 
-        <div className="bg-slate-900/80 border border-slate-700/60 rounded-xl p-2.5 text-center">
-          <span className="text-[11px] text-amber-400/90 block font-semibold">
+        <div className="bg-slate-900/80 border border-slate-700/60 rounded-xl p-3 text-center">
+          <span className="text-[11px] text-amber-400/90 block font-semibold mb-0.5">
             {betType === 'all' ? '全体合成オッズ' : `${currentTypeTitle} 合成オッズ`}
           </span>
-          <span className="text-base font-bold text-amber-300 font-mono">
+          <span className="text-lg font-bold text-amber-300 font-mono">
             {currentAllocation.syntheticOdds > 0
               ? `${currentAllocation.syntheticOdds.toFixed(2)}倍`
               : 'ー'}
           </span>
         </div>
 
-        <div className="bg-slate-900/80 border border-slate-700/60 rounded-xl p-2.5 text-center">
-          <span className="text-[11px] text-slate-400 block">合計購入金額</span>
-          <span className="text-base font-bold text-cyan-300 font-mono">
+        <div className="bg-slate-900/80 border border-slate-700/60 rounded-xl p-3 text-center">
+          <span className="text-[11px] text-cyan-400/90 block font-semibold mb-0.5">
+            合計購入金額
+          </span>
+          <span className="text-lg font-bold text-cyan-300 font-mono">
             {currentAllocation.totalCost > 0
               ? `${currentAllocation.totalCost.toLocaleString()}円`
               : '0円'}
-          </span>
-        </div>
-
-        <div className="bg-slate-900/80 border border-slate-700/60 rounded-xl p-2.5 text-center">
-          <span className="text-[11px] text-emerald-400/90 block font-semibold">
-            予想払戻（目標配当）
-          </span>
-          <span className="text-base font-bold text-emerald-400 font-mono">
-            {approxPayout > 0 ? `約 ${approxPayout.toLocaleString()}円` : 'ー'}
           </span>
         </div>
       </div>
@@ -1016,10 +997,10 @@ export const PredictionBets: React.FC<Props> = ({
                       {renderCombinationBadge(item.combination)}
                     </div>
 
-                    {/* Numbers: Odds, Stake, Expected Payout */}
+                    {/* Numbers: Odds & Purchase Stake */}
                     <div className="flex items-center gap-3 sm:gap-6 flex-wrap justify-end">
                       {/* オッズ */}
-                      <div className="text-right min-w-[65px]">
+                      <div className="text-right min-w-[70px]">
                         <span className="text-[10px] text-slate-400 block font-sans">
                           オッズ
                         </span>
@@ -1034,7 +1015,7 @@ export const PredictionBets: React.FC<Props> = ({
 
                       {/* 購入金額 */}
                       <div
-                        className={`text-right min-w-[75px] px-2.5 py-1 rounded-lg border ${
+                        className={`text-right min-w-[85px] px-2.5 py-1 rounded-lg border ${
                           isSelected
                             ? 'bg-slate-950/90 border-cyan-800/80'
                             : 'bg-slate-950/40 border-slate-800/40'
@@ -1049,30 +1030,6 @@ export const PredictionBets: React.FC<Props> = ({
                           }`}
                         >
                           {isSelected && row ? `${row.amount.toLocaleString()}円` : '未選択'}
-                        </span>
-                      </div>
-
-                      {/* 予想払戻金 */}
-                      <div
-                        className={`text-right min-w-[85px] px-2.5 py-1 rounded-lg border ${
-                          isSelected
-                            ? 'bg-emerald-950/40 border-emerald-900/60'
-                            : 'bg-slate-950/40 border-slate-800/40'
-                        }`}
-                      >
-                        <span className="text-[10px] text-emerald-400 block font-sans font-medium">
-                          予想配当
-                        </span>
-                        <span
-                          className={`font-mono font-black text-sm ${
-                            isSelected && row && row.expectedReturn > 0
-                              ? 'text-emerald-300'
-                              : 'text-slate-600'
-                          }`}
-                        >
-                          {isSelected && row && row.expectedReturn > 0
-                            ? `${row.expectedReturn.toLocaleString()}円`
-                            : 'ー'}
                         </span>
                       </div>
                     </div>
@@ -1132,10 +1089,10 @@ export const PredictionBets: React.FC<Props> = ({
                       {renderCombinationBadge(bet.combination)}
                     </div>
 
-                    {/* Numbers: Odds, Stake, Expected Payout */}
+                    {/* Numbers: Odds & Purchase Stake */}
                     <div className="flex items-center gap-3 sm:gap-6 flex-wrap justify-end">
                       {/* オッズ */}
-                      <div className="text-right min-w-[65px]">
+                      <div className="text-right min-w-[70px]">
                         <span className="text-[10px] text-slate-400 block font-sans">
                           オッズ
                         </span>
@@ -1150,7 +1107,7 @@ export const PredictionBets: React.FC<Props> = ({
 
                       {/* 購入金額 */}
                       <div
-                        className={`text-right min-w-[75px] px-2.5 py-1 rounded-lg border ${
+                        className={`text-right min-w-[85px] px-2.5 py-1 rounded-lg border ${
                           isSelected
                             ? 'bg-slate-950/90 border-cyan-800/80'
                             : 'bg-slate-950/40 border-slate-800/40'
@@ -1165,30 +1122,6 @@ export const PredictionBets: React.FC<Props> = ({
                           }`}
                         >
                           {isSelected && row ? `${row.amount.toLocaleString()}円` : '未選択'}
-                        </span>
-                      </div>
-
-                      {/* 予想払戻金 */}
-                      <div
-                        className={`text-right min-w-[85px] px-2.5 py-1 rounded-lg border ${
-                          isSelected
-                            ? 'bg-emerald-950/40 border-emerald-900/60'
-                            : 'bg-slate-950/40 border-slate-800/40'
-                        }`}
-                      >
-                        <span className="text-[10px] text-emerald-400 block font-sans font-medium">
-                          予想配当
-                        </span>
-                        <span
-                          className={`font-mono font-black text-sm ${
-                            isSelected && row && row.expectedReturn > 0
-                              ? 'text-emerald-300'
-                              : 'text-slate-600'
-                          }`}
-                        >
-                          {isSelected && row && row.expectedReturn > 0
-                            ? `${row.expectedReturn.toLocaleString()}円`
-                            : 'ー'}
                         </span>
                       </div>
                     </div>
